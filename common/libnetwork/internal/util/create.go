@@ -7,43 +7,43 @@ import (
 	"go.podman.io/common/libnetwork/types"
 )
 
-func CommonNetworkCreate(n NetUtil, network *types.Network) error {
-	if network.Labels == nil {
-		network.Labels = map[string]string{}
+func CommonNetworkCreate(n NetUtil, newNetwork *types.Network) error {
+	if newNetwork.Labels == nil {
+		newNetwork.Labels = map[string]string{}
 	}
-	if network.Options == nil {
-		network.Options = map[string]string{}
+	if newNetwork.Options == nil {
+		newNetwork.Options = map[string]string{}
 	}
-	if network.IPAMOptions == nil {
-		network.IPAMOptions = map[string]string{}
+	if newNetwork.IPAMOptions == nil {
+		newNetwork.IPAMOptions = map[string]string{}
 	}
 
 	var name string
 	var err error
 	// validate the name when given
-	if network.Name != "" {
-		if !types.NameRegex.MatchString(network.Name) {
-			return fmt.Errorf("network name %s invalid: %w", network.Name, types.ErrInvalidName)
+	if newNetwork.Name != "" {
+		if !types.NameRegex.MatchString(newNetwork.Name) {
+			return fmt.Errorf("network name %s invalid: %w", newNetwork.Name, types.ErrInvalidName)
 		}
-		if _, err := n.Network(network.Name); err == nil {
-			return fmt.Errorf("network name %s already used: %w", network.Name, types.ErrNetworkExists)
+		if _, err := n.Network(newNetwork.Name); err == nil {
+			return fmt.Errorf("network name %s already used: %w", newNetwork.Name, types.ErrNetworkExists)
 		}
 	} else {
 		name, err = GetFreeDeviceName(n)
 		if err != nil {
 			return err
 		}
-		network.Name = name
+		newNetwork.Name = name
 		// also use the name as interface name when we create a bridge network
-		if network.Driver == types.BridgeNetworkDriver && network.NetworkInterface == "" {
-			network.NetworkInterface = name
+		if newNetwork.Driver == types.BridgeNetworkDriver && newNetwork.NetworkInterface == "" {
+			newNetwork.NetworkInterface = name
 		}
 	}
 
 	// Validate interface name if specified
-	if network.NetworkInterface != "" {
-		if err := ValidateInterfaceName(network.NetworkInterface); err != nil {
-			return fmt.Errorf("network interface name %s invalid: %w", network.NetworkInterface, err)
+	if newNetwork.NetworkInterface != "" {
+		if err := ValidateInterfaceName(newNetwork.NetworkInterface); err != nil {
+			return fmt.Errorf("network interface name %s invalid: %w", newNetwork.NetworkInterface, err)
 		}
 	}
 	return nil

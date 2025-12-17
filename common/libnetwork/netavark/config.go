@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"time"
 
+	"go.podman.io/common/libnetwork/internal/util"
 	internalutil "go.podman.io/common/libnetwork/internal/util"
 	"go.podman.io/common/libnetwork/types"
 	"go.podman.io/storage/pkg/stringid"
@@ -141,9 +142,43 @@ func (n *netavarkNetwork) networkCreate(newNetwork *types.Network, defaultNet bo
 		}
 	}
 
-	err := internalutil.CommonNetworkCreate(n, newNetwork)
-	if err != nil {
-		return nil, err
+	if newNetwork.Labels == nil {
+		newNetwork.Labels = map[string]string{}
+	}
+	if newNetwork.Options == nil {
+		newNetwork.Options = map[string]string{}
+	}
+	if newNetwork.IPAMOptions == nil {
+		newNetwork.IPAMOptions = map[string]string{}
+	}
+
+	var name string
+	var err error
+	// validate the name when given
+	if newNetwork.Name != "" {
+		if !types.NameRegex.MatchString(newNetwork.Name) {
+			return nil, fmt.Errorf("network name %s invalid: %w", newNetwork.Name, types.ErrInvalidName)
+		}
+		if _, err := n.Network(newNetwork.Name); err == nil {
+			return nil, fmt.Errorf("network name %s already used: %w", newNetwork.Name, types.ErrNetworkExists)
+		}
+	} else {
+		name, err = util.GetFreeDeviceName(n)
+		if err != nil {
+			return nil, err
+		}
+		newNetwork.Name = name
+		// also use the name as interface name when we create a bridge network
+		if newNetwork.Driver == types.BridgeNetworkDriver && newNetwork.NetworkInterface == "" {
+			newNetwork.NetworkInterface = name
+		}
+	}
+
+	// Validate interface name if specified
+	if newNetwork.NetworkInterface != "" {
+		if err := util.ValidateInterfaceName(newNetwork.NetworkInterface); err != nil {
+			return nil, fmt.Errorf("network interface name %s invalid: %w", newNetwork.NetworkInterface, err)
+		}
 	}
 
 	err = validateIPAMDriver(newNetwork)

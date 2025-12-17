@@ -1,0 +1,15 @@
+[package]
+name = "libnetwork"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "libnetwork"
+path = "src/lib.rs"
+
+[dependencies]
+regex = "1.10"
+ipnet = "2.9"
+rand = "0.8"
+hex = "0.4"
+

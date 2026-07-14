@@ -284,12 +284,21 @@ type PerNetworkOptions struct {
 	// StaticIPs for this container. Optional.
 	// swagger:type []string
 	StaticIPs []net.IP `json:"static_ips,omitempty"`
-	// Aliases contains a list of names which the dns server should resolve
-	// to this container. Should only be set when DNSEnabled is true on the Network.
-	// If aliases are set but there is no dns support for this network the
+	// Aliases contains a list of user-provided names which the dns server should resolve
+	// to this container.
+	// Should only be set when DNSEnabled is true on the Network.
+	// If set but there is no dns support for this network the
 	// network interface implementation should ignore this and NOT error.
 	// Optional.
 	Aliases []string `json:"aliases,omitempty"`
+	// DNSNames contains the complete list of DNS names that should resolve
+	// to this container, including the container name, user-provided aliases,
+	// short container ID, and hostname.
+	// Should only be set when DNSEnabled is true on the Network.
+	// If set but there is no dns support for this network the
+	// network interface implementation should ignore this and NOT error.
+	// Optional.
+	DNSNames []string `json:"dns_names,omitempty"`
 	// StaticMac for this container. Optional.
 	// swagger:strfmt string
 	StaticMAC HardwareAddr `json:"static_mac,omitempty"`
